@@ -1,0 +1,72 @@
+class ItemList {
+	string ItemClass;
+	string AmmoClass;
+	int minamount;
+	int maxamount;
+
+	static ItemList create(name newItem, name newAmmo = "", int newMin = 0, int newMax = 0) {
+		ItemList newEntry = new("ItemList");
+		newEntry.ItemClass = newItem;
+		newEntry.AmmoClass = newAmmo;
+		newEntry.minamount = newMin;
+		newEntry.maxamount = newMax;
+		return newEntry;
+	}
+}
+
+extend class GunfightHandler {
+	array<ItemList> PWepsList;
+	array<ItemList> SWepsList;
+	array<ItemList> GadgetList;
+	array<ItemList> EquipList;
+	array<ItemList> ArmorList;
+
+	override void OnRegister() {
+		//Primaries
+		PWepsList.push(ItemList.create("ZM66AssaultRifle","HD4mMag",3,6));
+		PWepsList.push(ItemList.create("ZM66Semi","HD4mMag",3,6));
+		PWepsList.push(ItemList.create("ZM66Regular","HD4mMag",3,6));
+		PWepsList.push(ItemList.create("ZM66Irregular","HD4mMag",3,6));
+		PWepsList.push(ItemList.create("LiberatorRifle","HD7mMag",1,3));
+		PWepsList.push(ItemList.create("LiberatorNoGL","HD7mMag",1,3));
+		PWepsList.push(ItemList.create("LiberatorNoBullpup","HD7mMag",1,3));
+		PWepsList.push(ItemList.create("LiberatorNoBullpupNoGL","HD7mMag",1,3));
+		PWepsList.push(ItemList.create("HDSMG","HD9mMag30",2,4));
+		PWepsList.push(ItemList.create("Hunter","HDShellAmmo",8,12));
+		PWepsList.push(ItemList.create("Slayer","HDShellAmmo",12,16));
+		PWepsList.push(ItemList.create("BossRifle","HD7mClip",4,6));
+		PWepsList.push(ItemList.create("BossRifle","SevenMilAmmo",4,6));
+		PWepsList.push(ItemList.create("Vulcanette","HD4mMag",5,5));
+		PWepsList.push(ItemList.create("ThunderBuster","HDBattery",1,2));
+
+		//Secondaries
+		SWepsList.push(ItemList.create("HDPistol","HD9mMag15",2,4));
+		SWepsList.push(ItemList.create("HDPistol","HDPistolAmmo",10,15));
+		SWepsList.push(ItemList.create("HDRevolver","HDRevolverAmmo",12,18));
+		SWepsList.push(ItemList.create("HDRevolver","HDPistolAmmo",12,18));
+		SWepsList.push(ItemList.create("Slayer","HDShellAmmo",12,16));
+
+		//Gadgets
+		GadgetList.push(ItemList.create("PortableLiteAmp"));
+		GadgetList.push(ItemList.create("PortableRadsuit"));
+		GadgetList.push(ItemList.create("HDJetPack"));
+		GadgetList.push(ItemList.create("HERPUsable"));
+		GadgetList.push(ItemList.create("DERPUsable"));
+		GadgetList.push(ItemList.create("DoorBuster"));
+		GadgetList.push(ItemList.create("PortableLadder"));
+
+		//Other Gear
+		EquipList.push(ItemList.create("SecondBlood"));
+		EquipList.push(ItemList.create("PortableMedikit"));
+		EquipList.push(ItemList.create("PortableStimpack"));
+		EquipList.push(ItemList.create("PortableBerserkPack"));
+		EquipList.push(ItemList.create("BluePotion"));
+		//EquipList.push(ItemList.create("HDIEDKit","HDRocketAmmo",1,1));
+
+		//Armor
+		ArmorList.push(ItemList.create("GarrisonArmourWorn"));
+		ArmorList.push(ItemList.create("GarrisonArmourWorn"));
+		ArmorList.push(ItemList.create("GarrisonArmourWorn"));
+		ArmorList.push(ItemList.create("BattleArmourWorn"));
+	}
+}

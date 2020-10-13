@@ -1,0 +1,138 @@
+version "4.4"
+#include "weaponlists.zsc"
+
+const GUNFIGHT_COUNTDOWN = 6;
+
+class GunfightHandler : EventHandler {
+	string GFWeapon;
+	string GFBackup;
+	string GFAmmo;
+	int GFAmmoCount;
+	string GFBackupAmmo;
+	int GFBackupAmmoCount;
+	string GFGadget;
+	string GFEquip;
+	string GFArmor;
+	bool init[MAXPLAYERS];
+	bool alldone;
+
+	override void WorldTick() {
+		//if (GFWeapon == "") { return; }
+		for (int i = 0; i < MAXPLAYERS; i++) {
+			if (!playeringame[i]) { continue; } // check for ingame
+
+			if (CountDownTimer() > 0) {
+				players[i].mo.player.cheats |= CF_TOTALLYFROZEN;
+				HDWeapon rw = HDWeapon(players[i].mo.player.ReadyWeapon);
+				if (rw) { rw.A_WeaponMessage(Readout(players[i].mo)); }
+				if (CountDownTimer() > 0 && level.maptime % 35 == 0 && level.maptime >= 35) {
+					players[i].mo.A_StartSound("Gunfight/beep",CHAN_VOICE,CHANF_UI|CHANF_NOPAUSE|CHANF_LOCAL, volume:0.5);
+				}
+			}
+
+			if (CountDownTimer() == 0) {
+				players[i].mo.player.cheats &= ~CF_TOTALLYFROZEN;
+				HDWeapon rw = HDWeapon(players[i].mo.player.ReadyWeapon);
+				if (rw) { rw.A_WeaponMessage(""); }
+			}
+
+			if (init[i] == false && level.maptime > 1) {
+				console.printf("init for "..i);
+				players[i].mo.A_GiveInventory("GunfightReset");
+				players[i].mo.A_GiveInventory(GFWeapon);
+				players[i].mo.A_GiveInventory(GFAmmo, GFAmmoCount);
+				players[i].mo.A_GiveInventory(GFBackup);
+				players[i].mo.A_GiveInventory(GFBackupAmmo, GFBackupAmmoCount);
+				players[i].mo.A_GiveInventory(GFGadget);
+				players[i].mo.A_GiveInventory(GFEquip);
+				players[i].mo.A_GiveInventory(GFArmor);
+				HDWeaponSelector.Select(players[i].mo,GFWeapon,1);
+				init[i] = true;
+			}
+		}
+	}
+
+	string Readout(PlayerPawn p) {
+		string r = "";
+		r = r.."\cv== "..(CountDownTimer()).." ==\n\n";
+		r = r.."\cvPrimary\n";
+		if (GFWeapon != "") {
+			r = r..getdefaultbytype((class<actor>)(GFWeapon)).GetTag().."\n"
+				..getdefaultbytype((class<actor>)(GFAmmo)).GetTag()
+				.." x"..p.countinv(GFAmmo).."\n\n";
+		}
+		else { r = r.."None\n\n"; }
+
+		r = r.."\cvSecondary\n";
+		if (GFBackup != "") {
+			r = r..getdefaultbytype((class<actor>)(GFBackup)).GetTag().."\n"
+				..getdefaultbytype((class<actor>)(GFBackupAmmo)).GetTag()
+				.." x"..p.countinv(GFBackupAmmo).."\n\n";
+		}
+		else { r = r.."None\n\n"; }
+
+		r = r.."\cvEquipment\n";
+		if (GFArmor != "") { r = r..getdefaultbytype((class<actor>)(GFArmor)).GetTag().."\n"; }
+		if (GFGadget != "") { r = r..getdefaultbytype((class<actor>)(GFGadget)).GetTag().."\n"; }
+		if (GFEquip != "") { r = r..getdefaultbytype((class<actor>)(GFEquip)).GetTag().."\n"; }
+		return r;
+	}
+
+	override void WorldThingSpawned(WorldEvent e) {
+		if (level.maptime > 1) { return; }
+		if (e.thing is "HDWeapon") {
+			e.Thing.Destroy();
+		}
+	}
+
+	override void WorldLoaded(WorldEvent e) {
+		for (int i = 1; i < MAXPLAYERS; i++) { init[i] = false; }
+
+		//Primary
+		if (random[gunfight](0,2) != 0) {
+			int Prim = random[gunfight](0,PWepsList.size() - 1);
+			GFWeapon = PWepsList[Prim].ItemClass;
+			GFAmmo = PWepsList[Prim].AmmoClass;
+			GFAmmoCount = random[gunfight](PWepsList[Prim].minamount,PWepsList[Prim].maxamount);
+		}
+
+		//Secondary
+		if (random[gunfight](0,2) != 0) {
+			int Sec = random[gunfight](0,SWepsList.size() - 1);
+			GFBackup = SWepsList[Sec].ItemClass;
+			GFBackupAmmo = SWepsList[Sec].AmmoClass;
+			GFBackupAmmoCount = random[gunfight](SWepsList[Sec].minamount,SWepsList[Sec].maxamount);
+		}
+
+		//Gadget
+		if (random[gunfight](0,1) != 0) {
+			int Gad = random[gunfight](0,GadgetList.size() - 1);
+			GFGadget = GadgetList[Gad].ItemClass;
+		}
+
+		//Equip
+		if (random[gunfight](0,2) != 0) {
+			int Eqp = random[gunfight](0,EquipList.size() - 1);
+			GFEquip = EquipList[Eqp].ItemClass;
+		}
+
+		//Armor
+		if (random[gunfight](0,2) != 0) {
+			int Arm = random[gunfight](0,ArmorList.size() - 1);
+			GFArmor = ArmorList[Arm].ItemClass;
+		}
+	}
+
+	int CountDownTimer() {
+		return ((GUNFIGHT_COUNTDOWN * 35) - level.maptime) / 35;
+	}
+}
+
+class GunfightReset : InvReset {
+	override void attachtoowner(actor other) {
+		ReallyClearInventory(other, true);
+		let d=HDPlayerPawn(other);
+		if(d)d.GiveBasics();
+		destroy();
+	}
+}
